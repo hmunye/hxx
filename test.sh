@@ -2,6 +2,11 @@
 
 set -euo pipefail
 
+if ! command -v xxd &> /dev/null; then
+    echo "ERROR: xxd is not installed or not in PATH" >&2
+    exit 1
+fi
+
 binary="./target/release/hxx"
 
 if [[ "$#" -ne 1  ]]; then
@@ -18,25 +23,20 @@ if [ ! -f "$binary" ]; then
     exit 1
 fi
 
-if ! command -v xxd &> /dev/null; then
-    echo "ERROR: xxd is not installed or not in PATH" >&2
-    exit 1
-fi
-
 tmp_file=$(mktemp)
 trap "rm -f $tmp_file" EXIT
 
 for ((i = 1; i <= num_tests; ++i)); do
-    random_num=$(( RANDOM % (64 - 2 + 1) + 2 ))
+    random_num=$(( RANDOM % (1000 - 100 + 1) + 100 ))
 
     head -c "$random_num" /dev/urandom > "$tmp_file" || true
 
     echo -n "TEST $i: "
 
     if diff <($binary "$tmp_file") <(xxd "$tmp_file") > /dev/null; then
-        echo "PASS"
+        echo "[PASS]"
     else
-        echo "FAIL"
+        echo "[FAIL]"
         diff <($binary "$tmp_file") <(xxd "$tmp_file") >&2
         exit 1
     fi
