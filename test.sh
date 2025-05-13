@@ -27,17 +27,18 @@ tmp_file=$(mktemp)
 trap "rm -f $tmp_file" EXIT
 
 for ((i = 1; i <= num_tests; ++i)); do
-    random_num=$(( RANDOM % (1000 - 100 + 1) + 100 ))
+    # Generate a random file size between 100 and 1000 bytes
+    random_num=$(( RANDOM % 901 + 100 ))
 
     head -c "$random_num" /dev/urandom > "$tmp_file" || true
 
-    echo -n "TEST $i: "
+    echo -n "DIFF TEST $i: "
 
     if diff <($binary "$tmp_file") <(xxd "$tmp_file") > /dev/null; then
         echo "[PASS]"
     else
         echo "[FAIL]"
-        diff <($binary "$tmp_file") <(xxd "$tmp_file") >&2
+        diff -y <($binary "$tmp_file") <(xxd "$tmp_file") >&2
         exit 1
     fi
 done
