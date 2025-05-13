@@ -10,14 +10,19 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut args = env::args();
     // let program = args.next().ok_or("unknown program")?;
 
-    let file_path = args.nth(1).ok_or("no file provided")?;
-
-    let file = File::open(&file_path)?;
+    // Read from file if specified, otherwise read from stdin (e.g., piping)
+    let reader: Box<dyn Read> = if let Some(file_path) = args.nth(1) {
+        let file = File::open(&file_path)?;
+        Box::new(file)
+    } else {
+        let stdin = std::io::stdin().lock();
+        Box::new(stdin)
+    };
 
     let stdout = std::io::stdout().lock();
 
     // Optimizes I/O by buffering reads and writes, reducing syscalls
-    let mut reader = BufReader::new(file);
+    let mut reader = BufReader::new(reader);
     let mut writer = BufWriter::new(stdout);
 
     // Preallocate buffer for formatting a full line per read chunk
@@ -61,7 +66,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         line.extend(buf[..bytes_read].iter().map(|&b| match b {
             // Printable characters: SP (0x20) to ~ (0x7e)
             0x20..0x7f => b as char,
-            // Placeholder
             _ => '.',
         }));
 
