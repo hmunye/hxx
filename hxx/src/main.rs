@@ -1,3 +1,5 @@
+use flag_macro::flag;
+
 use std::env;
 use std::fmt::Write as _;
 use std::fs::File;
@@ -5,6 +7,11 @@ use std::io::{BufReader, BufWriter, Read, Write as _};
 
 static BYTES_PER_LINE: usize = 16;
 static BYTE_GROUPING: usize = 2;
+
+#[flag("-h", BYTES_PER_LINE, "format <cols> octets per line. Default 16.")]
+fn _usage(_program: &str, _args: env::Args) {
+    todo!()
+}
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut args = env::args();

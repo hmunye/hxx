@@ -3,5 +3,12 @@
 version = 4
 
 [[package]]
+name = "flag_macro"
+version = "0.1.0"
+
+[[package]]
 name = "hxx"
 version = "0.1.0"
+dependencies = [
+ "flag_macro",
+]
