@@ -1,3 +1,6 @@
-[workspace]
-members = ["hxx", "flag_macro"]
-resolver = "3"
+[package]
+name = "hxx"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
