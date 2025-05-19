@@ -1,6 +1,18 @@
 [package]
 name = "hxx"
 version = "0.1.0"
+authors = ["Huseen Munye"]
 edition = "2024"
+description = "Minimal re-implementation of the xxd command-line utility"
+readme = "README.md"
+repository = "https://github.com/hmunye/hxx"
+license = "MIT"
+categories = ["command-line-utilities"]
+
+[profile.dev]
+opt-level = 0
+
+[profile.release]
+opt-level = 3
 
 [dependencies]

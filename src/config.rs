@@ -2,15 +2,63 @@ use std::fs::File;
 use std::io::{self, Read, Write};
 use std::process;
 
+/// Configuration for hex dumping and reverse hex dumping operations.
+///
+/// Defines the behavior of the hex processing functions, including formatting options,
+/// direction of operation (dump or reverse), and I/O sources.
 pub struct Config {
+    /// Number of bytes to display per line in the hex dump.
     pub cols: usize,
+
+    /// Number of bytes to group together in the hex output (for readability).
     pub byte_groups: usize,
+
+    /// If `true`, performs a reverse hex dump (hex -> binary); otherwise, (binary -> hex).
     pub reverse: bool,
+
+    /// Input source to read from (e.g., file or stdin).
     pub input: Box<dyn Read>,
+
+    /// Output destination to write to (e.g., file or stdout).
     pub output: Box<dyn Write>,
 }
 
 impl Config {
+    /// Constructs a `Config` from an iterator of command-line arguments.
+    ///
+    /// Parses arguments to determine formatting options, input/output streams, and mode (dump or reverse).
+    ///
+    /// `program` should be the name of the executable.
+    ///
+    /// # Examples
+    ///
+    /// Using a `Vec<String>`:
+    /// ```
+    /// let args = vec![
+    ///     "-c".to_string(),
+    ///     "40".to_string(),
+    ///     "-g".to_string(),
+    ///     "4".to_string(),
+    /// ];
+    ///
+    /// let config = hxx::Config::build(args.into_iter(), "hxx").unwrap_or_else(|err| {
+    ///     eprintln!("Error: {err}");
+    ///     std::process::exit(1);
+    /// });
+    ///
+    /// ```
+    ///
+    /// Using `env::args()` directly:
+    /// ```
+    /// let mut args = std::env::args();
+    ///
+    /// let program = args.next().unwrap_or_else(|| "hxx".to_string());
+    ///
+    /// let config = hxx::Config::build(args, &program).unwrap_or_else(|err| {
+    ///     eprintln!("Error: {err}");
+    ///     std::process::exit(1);
+    /// });;
+    /// ```
     pub fn build<T: Iterator<Item = String>>(args: T, program: &str) -> Result<Self, String> {
         let mut cols: usize = 16;
         let mut byte_groups: usize = 2;
@@ -89,9 +137,9 @@ impl Config {
 }
 
 struct Flag {
-    pub name: &'static str,
-    pub description: &'static str,
-    pub run: fn(&str),
+    name: &'static str,
+    description: &'static str,
+    run: fn(&str),
 }
 
 const FLAG_REGISTRY: &[Flag] = &[
@@ -124,6 +172,10 @@ const FLAG_REGISTRY: &[Flag] = &[
 
 fn noop(_program: &str) {}
 
+/// Prints the usage information for the program and exits with a non-zero status.
+///
+/// Displays valid command-line syntax and available options.
+/// Intended to be called when the user provides invalid input or provides the `-h` flag.
 pub fn print_usage(program: &str) {
     println!("Usage:");
     println!("      {program} [options] [infile [outfile]]");
@@ -138,6 +190,9 @@ pub fn print_usage(program: &str) {
     process::exit(1);
 }
 
+/// Prints the program name and version, then exits successfully.
+///
+/// Uses the version specified in the crate metadata (`CARGO_PKG_VERSION`).
 pub fn print_version(program: &str) {
     println!("{} - {}", program, env!("CARGO_PKG_VERSION"));
     process::exit(0);

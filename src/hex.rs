@@ -6,6 +6,31 @@ use std::io::Cursor;
 
 use crate::Config;
 
+/// Processes input and generates a hex dump using the provided `Config`.
+///
+/// Reads bytes from the configured input stream, formats each line with:
+/// - an 8-digit hexadecimal offset,
+/// - the hex representation of bytes grouped as specified,
+/// - an ASCII representation of those bytes (`.` for non-printable),
+/// matching the style of the `xxd`.
+///
+/// Lines are written to the configured output stream.
+///
+/// # Example
+///
+/// ```
+/// let config = hxx::Config {
+///     cols: 16,
+///     byte_groups: 2,
+///     reverse: false,
+///     input: Box::new(std::io::stdin()),
+///     output: Box::new(std::io::stdout()),
+/// };
+/// hxx::hex_dump(config).unwrap_or_else(|err| {
+///     eprintln!("Error: {err}");
+///     std::process::exit(1);
+/// });
+/// ```
 pub fn hex_dump(config: Config) -> Result<(), String> {
     // Buffer I/O to minimize syscall overhead
     let mut reader = BufReader::new(config.input);
@@ -73,6 +98,31 @@ pub fn hex_dump(config: Config) -> Result<(), String> {
     Ok(())
 }
 
+/// Reconstructs the original binary data from a hex dump using the provided `Config`.
+///
+/// Each input line is expected to be formatted similarly to `xxd` output:
+/// - An 8-digit hex offset followed by a colon and a space,
+/// - Hex byte pairs grouped and separated by spaces,
+/// - Two spaces separating hex bytes from ASCII representation (which is ignored).
+///
+/// The function extracts only the hex byte pairs, converts them back to binary,
+/// and writes them sequentially.
+///
+/// # Example
+///
+/// ```
+/// let config = hxx::Config {
+///     cols: 16,
+///     byte_groups: 2,
+///     reverse: true,
+///     input: Box::new(std::io::stdin()),
+///     output: Box::new(std::io::stdout()),
+/// };
+/// hxx::reverse_hex_dump(config).unwrap_or_else(|err| {
+///     eprintln!("Error: {err}");
+///     std::process::exit(1);
+/// });
+/// ```
 pub fn reverse_hex_dump(config: Config) -> Result<(), String> {
     let mut reader = BufReader::new(config.input);
     let mut writer = BufWriter::new(config.output);
