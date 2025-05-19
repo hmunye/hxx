@@ -1,7 +1,7 @@
 use std::env;
 use std::process;
 
-use hxx::{Config, print_usage};
+use hxx::{Config, hex_dump, print_usage};
 
 fn main() {
     let mut args = env::args();
@@ -17,6 +17,8 @@ fn main() {
         unreachable!();
     });
 
-    println!("{cols}", cols = config.cols);
-    println!("{byte_groups}", byte_groups = config.byte_groups);
+    if let Err(err) = hex_dump(config) {
+        eprintln!("\x1b[1;91mERROR: {err}\x1b[0m");
+        process::exit(1);
+    }
 }
