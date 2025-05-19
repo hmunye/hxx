@@ -33,11 +33,11 @@ cargo install hxx
 
 ### From Source
 
-Clone repository and build with Cargo:
-
 ```bash
 git clone https://github.com/hmunye/hxx.git
+
 cd hxx
+
 cargo build --release
 ```
 
