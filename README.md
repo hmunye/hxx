@@ -25,7 +25,7 @@ Options:
 
 ## Installation
 
-### From [crates.io](https://crates.io)
+### From [crates.io](https://crates.io/crates/hxx)
 
 ```bash
 cargo install hxx
