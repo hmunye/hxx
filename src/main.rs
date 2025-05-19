@@ -1,7 +1,7 @@
 use std::env;
 use std::process;
 
-use hxx::{Config, hex_dump, print_usage};
+use hxx::{Config, hex_dump, print_usage, reverse_hex_dump};
 
 fn main() {
     let mut args = env::args();
@@ -17,8 +17,18 @@ fn main() {
         unreachable!();
     });
 
-    if let Err(err) = hex_dump(config) {
-        eprintln!("\x1b[1;91mERROR: {err}\x1b[0m");
-        process::exit(1);
+    match config.reverse {
+        true => {
+            if let Err(err) = reverse_hex_dump(config) {
+                eprintln!("\x1b[1;91mERROR: {err}\x1b[0m");
+                process::exit(1);
+            }
+        }
+        false => {
+            if let Err(err) = hex_dump(config) {
+                eprintln!("\x1b[1;91mERROR: {err}\x1b[0m");
+                process::exit(1);
+            }
+        }
     }
 }

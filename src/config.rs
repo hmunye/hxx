@@ -5,6 +5,7 @@ use std::process;
 pub struct Config {
     pub cols: usize,
     pub byte_groups: usize,
+    pub reverse: bool,
     pub input: Box<dyn Read>,
     pub output: Box<dyn Write>,
 }
@@ -13,6 +14,7 @@ impl Config {
     pub fn build<T: Iterator<Item = String>>(args: T, program: &str) -> Result<Self, String> {
         let mut cols: usize = 16;
         let mut byte_groups: usize = 2;
+        let mut reverse = false;
 
         let mut args = args.peekable();
 
@@ -30,6 +32,9 @@ impl Config {
                         }
                         "-g" => {
                             byte_groups = Self::parse_value(args.next())?;
+                        }
+                        "-r" => {
+                            reverse = true;
                         }
                         // No value argument expected
                         _ => (flag.run)(&program),
@@ -54,10 +59,13 @@ impl Config {
 
         // Write to file if provided; fallback to stdout
         let output: Box<dyn Write> = if let Some(file_path) = args.next() {
-            let file = File::options()
-                .append(true)
-                .open(file_path)
-                .map_err(|err| format!("failed to open file: {err}"))?;
+            let file = if let Ok(file) = File::options().append(true).open(&file_path) {
+                file
+            } else {
+                // Create file if it doesn't exist
+                File::create(&file_path).map_err(|err| format!("failed to create file: {err}"))?
+            };
+
             Box::new(file)
         } else {
             Box::new(io::stdout().lock())
@@ -66,6 +74,7 @@ impl Config {
         Ok(Self {
             cols,
             byte_groups,
+            reverse,
             input,
             output,
         })
@@ -97,6 +106,11 @@ const FLAG_REGISTRY: &[Flag] = &[
         run: noop,
     },
     Flag {
+        name: "-r",
+        description: "          reverse operation: convert (or patch) hexdump into binary.",
+        run: noop,
+    },
+    Flag {
         name: "-h",
         description: "          print this summary.",
         run: print_usage,
@@ -114,7 +128,7 @@ pub fn print_usage(program: &str) {
     println!("Usage:");
     println!("      {program} [options] [infile [outfile]]");
     println!("   or");
-    println!("      {program} -r [-c cols] [infile [outfile]]");
+    println!("      {program} -r [infile [outfile]]");
     println!("Options:");
 
     for flag in FLAG_REGISTRY {
