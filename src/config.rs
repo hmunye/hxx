@@ -10,7 +10,7 @@ pub struct Config {
     /// Number of bytes to display per line in the hex dump.
     pub cols: usize,
 
-    /// Number of bytes to group together in the hex output (for readability).
+    /// Number of bytes to group together in the hex output.
     pub byte_groups: usize,
 
     /// If `true`, performs a reverse hex dump (hex -> binary); otherwise, (binary -> hex).
@@ -26,7 +26,7 @@ pub struct Config {
 impl Config {
     /// Constructs a `Config` from an iterator of command-line arguments.
     ///
-    /// Parses arguments to determine formatting options, input/output streams, and mode (dump or reverse).
+    /// Parses arguments to determine formatting options, input/output streams, mode (dump or reverse), etc.
     ///
     /// `program` should be the name of the executable.
     ///
@@ -46,6 +46,8 @@ impl Config {
     ///     std::process::exit(1);
     /// });
     ///
+    /// assert_eq!(config.cols, 40);
+    /// assert_eq!(config.byte_groups, 4);
     /// ```
     ///
     /// Using `env::args()` directly:
@@ -58,7 +60,19 @@ impl Config {
     ///     eprintln!("Error: {err}");
     ///     std::process::exit(1);
     /// });;
+    ///
+    /// // Default values
+    /// assert_eq!(config.cols, 16);
+    /// assert_eq!(config.byte_groups, 2);
     /// ```
+    ///
+    /// # Error
+    ///
+    /// This function returns an error if:
+    /// - An unrecognized flag is supplied.
+    /// - A flag is given an invalid value.
+    /// - The input file cannot be opened.
+    /// - The output file cannot be created or opened for writing.
     pub fn build<T: Iterator<Item = String>>(args: T, program: &str) -> Result<Self, String> {
         let mut cols: usize = 16;
         let mut byte_groups: usize = 2;
@@ -130,7 +144,7 @@ impl Config {
 
     fn parse_value(value: Option<String>) -> Result<usize, String> {
         match value.ok_or("missing value for flag")?.parse::<usize>() {
-            Ok(value) if (0..=256).contains(&value) => Ok(value),
+            Ok(value) if (1..=256).contains(&value) => Ok(value),
             _ => Err("invalid value for flag".into()),
         }
     }
@@ -145,12 +159,12 @@ struct Flag {
 const FLAG_REGISTRY: &[Flag] = &[
     Flag {
         name: "-c",
-        description: "cols      format <cols> octets per line (value must be > 0 and <= 256). Default 16.",
+        description: "cols      format <cols> octets per line (value must be in range 1..=256). Default 16.",
         run: noop,
     },
     Flag {
         name: "-g",
-        description: "bytes     number of octets per group in normal output (value must be > 0 and <= 256). Default 2.",
+        description: "bytes     number of octets per group in normal output (value must be in range 1..=256). Default 2.",
         run: noop,
     },
     Flag {
@@ -175,6 +189,7 @@ fn noop(_program: &str) {}
 /// Prints the usage information for the program and exits with a non-zero status.
 ///
 /// Displays valid command-line syntax and available options.
+///
 /// Intended to be called when the user provides invalid input or provides the `-h` flag.
 pub fn print_usage(program: &str) {
     println!("Usage:");

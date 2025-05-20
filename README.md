@@ -16,8 +16,8 @@ Usage:
    or
       hxx -r [infile [outfile]]
 Options:
-   -c  cols      format <cols> octets per line (value must be > 0 and <= 256). Default 16.
-   -g  bytes     number of octets per group in normal output (value must be > 0 and <= 256). Default 2.
+   -c  cols      format <cols> octets per line (value must be in range 1..=256). Default 16.
+   -g  bytes     number of octets per group in normal output (value must be in range 1..=256). Default 2.
    -r            reverse operation: convert (or patch) hexdump into binary.
    -h            print this summary.
    -v            show version.

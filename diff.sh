@@ -79,9 +79,11 @@ for ((i = 1; i <= num_tests; ++i)); do
     fi
 done
 
-avg_time=$(echo "scale=3; $total_time / $passed_tests" | bc)
+if [[ "$passed_tests" -ne 0 ]]; then
+    avg_time=$(echo "scale=3; $total_time / $passed_tests" | bc)
 
-echo
-echo "Tests passed: $passed_tests/$num_tests"
-printf "Total bytes:  %'d bytes \n" "${total_bytes}"
-echo "Average time: ${avg_time} ms"
+    echo
+    echo "Tests passed: $passed_tests/$num_tests"
+    printf "Total bytes:  %'d bytes \n" "${total_bytes}"
+    echo "Average time: ${avg_time} ms"
+fi
