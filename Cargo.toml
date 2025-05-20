@@ -1,6 +1,6 @@
 [package]
 name = "hxx"
-version = "0.2.0"
+version = "0.1.0"
 authors = ["Huseen Munye"]
 edition = "2024"
 description = "Minimal re-implementation of the xxd command-line utility"
